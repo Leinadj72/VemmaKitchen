@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -20,12 +21,16 @@ const Hero = () => {
             Indulge in authentic African cuisine with our restaurant and comprehensive catering services. From intimate gatherings to grand celebrations, we bring the vibrant taste of Africa to your table.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" className="bg-terracotta hover:bg-terracotta/90 text-white">
-              View Our Menu
-            </Button>
-            <Button size="lg" variant="outline" className="border-terracotta text-terracotta hover:bg-terracotta/10">
-              Book Catering <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Link to="/menu">
+              <Button size="lg" className="bg-terracotta hover:bg-terracotta/90 text-white">
+                View Our Menu
+              </Button>
+            </Link>
+            <Link to="/catering">
+              <Button size="lg" variant="outline" className="border-terracotta text-terracotta hover:bg-terracotta/10">
+                Book Catering <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
