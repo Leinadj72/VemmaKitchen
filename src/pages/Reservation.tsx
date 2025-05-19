@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -17,10 +16,17 @@ import * as z from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize Supabase client with fallback values if env variables aren't available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Check if the environment variables are available
+const supabaseAvailable = supabaseUrl && supabaseAnonKey;
+
+// Only create the client if we have the necessary credentials
+const supabase = supabaseAvailable 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 const TIMES = [
   "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", 
@@ -43,6 +49,7 @@ const Reservation = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [supabaseError, setSupabaseError] = useState(!supabaseAvailable);
 
   const form = useForm<z.infer<typeof reservationSchema>>({
     resolver: zodResolver(reservationSchema),
@@ -55,6 +62,18 @@ const Reservation = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof reservationSchema>) => {
+    if (!supabaseAvailable) {
+      toast({
+        variant: "destructive",
+        title: "Database connection not configured",
+        description: "Supabase environment variables are not set up.",
+      });
+      
+      // For demo purposes, still navigate to confirmation
+      navigate('/reservation-confirmation');
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -108,6 +127,13 @@ const Reservation = () => {
               <p className="text-charcoal/80 mb-8">
                 Reserve your table at African Feast to experience our authentic cuisine and warm hospitality.
               </p>
+              
+              {supabaseError && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md text-amber-600">
+                  <p className="text-sm font-medium">Demo Mode</p>
+                  <p className="text-xs mt-1">Database connection is not configured. This form will submit but not store data.</p>
+                </div>
+              )}
               
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -13,10 +12,17 @@ import * as z from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize Supabase client with fallback values if env variables aren't available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Check if the environment variables are available
+const supabaseAvailable = supabaseUrl && supabaseAnonKey;
+
+// Only create the client if we have the necessary credentials
+const supabase = supabaseAvailable 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -38,6 +44,9 @@ const Account = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Check if Supabase is properly configured
+  const [supabaseError, setSupabaseError] = useState(!supabaseAvailable);
+
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -57,6 +66,15 @@ const Account = () => {
   });
 
   const onLogin = async (values: z.infer<typeof loginSchema>) => {
+    if (!supabaseAvailable) {
+      toast({
+        variant: "destructive",
+        title: "Authentication not configured",
+        description: "Supabase environment variables are not set up.",
+      });
+      return;
+    }
+    
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -71,7 +89,7 @@ const Account = () => {
         description: "Welcome back!",
       });
       
-      navigate('/dashboard');
+      navigate('/');
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -84,6 +102,15 @@ const Account = () => {
   };
 
   const onSignup = async (values: z.infer<typeof signupSchema>) => {
+    if (!supabaseAvailable) {
+      toast({
+        variant: "destructive",
+        title: "Authentication not configured",
+        description: "Supabase environment variables are not set up.",
+      });
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -125,6 +152,13 @@ const Account = () => {
           <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
             <h1 className="heading-md text-center mb-6">Account Access</h1>
             
+            {supabaseError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
+                <p className="text-sm font-medium">Supabase configuration is missing</p>
+                <p className="text-xs mt-1">Authentication is currently unavailable. Please check your environment variables.</p>
+              </div>
+            )}
+            
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
@@ -165,7 +199,7 @@ const Account = () => {
                     <Button 
                       type="submit" 
                       className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
-                      disabled={loading}
+                      disabled={loading || supabaseError}
                     >
                       {loading ? "Logging in..." : "Log In"}
                     </Button>
@@ -235,7 +269,7 @@ const Account = () => {
                     <Button 
                       type="submit" 
                       className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
-                      disabled={loading}
+                      disabled={loading || supabaseError}
                     >
                       {loading ? "Creating Account..." : "Create Account"}
                     </Button>

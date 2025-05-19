@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -18,10 +17,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { createClient } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize Supabase client with fallback values if env variables aren't available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Check if the environment variables are available
+const supabaseAvailable = supabaseUrl && supabaseAnonKey;
+
+// Only create the client if we have the necessary credentials
+const supabase = supabaseAvailable 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 const EVENT_TYPES = [
   "Wedding",
@@ -57,6 +63,7 @@ const Catering = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [supabaseError, setSupabaseError] = useState(!supabaseAvailable);
 
   const form = useForm<z.infer<typeof cateringSchema>>({
     resolver: zodResolver(cateringSchema),
@@ -70,6 +77,18 @@ const Catering = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof cateringSchema>) => {
+    if (!supabaseAvailable) {
+      toast({
+        variant: "destructive",
+        title: "Database connection not configured",
+        description: "Supabase environment variables are not set up.",
+      });
+      
+      // For demo purposes, still navigate to confirmation
+      navigate('/catering-confirmation');
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -129,6 +148,13 @@ const Catering = () => {
               </div>
               
               <div className="bg-white rounded-xl shadow-md overflow-hidden p-8">
+                {supabaseError && (
+                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md text-amber-600">
+                    <p className="text-sm font-medium">Demo Mode</p>
+                    <p className="text-xs mt-1">Database connection is not configured. This form will submit but not store data.</p>
+                  </div>
+                )}
+                
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

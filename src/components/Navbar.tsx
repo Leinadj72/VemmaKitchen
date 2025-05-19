@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Menu, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,10 +5,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize Supabase client with fallback values if env variables aren't available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Check if the environment variables are available
+const supabaseAvailable = supabaseUrl && supabaseAnonKey;
+
+// Only create the client if we have the necessary credentials
+const supabase = supabaseAvailable 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +24,12 @@ const Navbar = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
+    // Only attempt to check auth if Supabase is properly initialized
+    if (!supabaseAvailable) {
+      console.log("Supabase environment variables are not set. Authentication is disabled.");
+      return;
+    }
+    
     // Check if user is already logged in
     const getUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -47,6 +59,14 @@ const Navbar = () => {
   }, []);
   
   const handleLogout = async () => {
+    if (!supabaseAvailable) {
+      toast({ 
+        variant: "destructive",
+        title: "Authentication is not configured" 
+      });
+      return;
+    }
+    
     try {
       await supabase.auth.signOut();
       toast({ 
