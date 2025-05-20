@@ -1,25 +1,16 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Account from "./pages/Account";
-import Reservation from "./pages/Reservation";
-import Catering from "./pages/Catering";
-import Confirmation from "./pages/Confirmation";
-import NotFound from "./pages/NotFound";
-import { supabase } from "@/lib/supabaseClient"
-
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Index from './pages/Index';
+import Account from './pages/Account';
+import Reservation from './pages/Reservation';
+import Catering from './pages/Catering';
+import Confirmation from './pages/Confirmation';
+import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
-
-async function testSupabase() {
-  const { data: { user }, error } = await supabase.auth.getUser()
-  console.log("User:", user)
-  console.log("Error:", error)
-}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
