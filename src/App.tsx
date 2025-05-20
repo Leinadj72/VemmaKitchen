@@ -10,8 +10,16 @@ import Reservation from "./pages/Reservation";
 import Catering from "./pages/Catering";
 import Confirmation from "./pages/Confirmation";
 import NotFound from "./pages/NotFound";
+import { supabase } from "@/lib/supabaseClient"
+
 
 const queryClient = new QueryClient();
+
+async function testSupabase() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  console.log("User:", user)
+  console.log("Error:", error)
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
