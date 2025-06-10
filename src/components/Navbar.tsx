@@ -13,7 +13,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabaseAvailable = supabaseUrl && supabaseAnonKey;
 
 // Only create the client if we have the necessary credentials
-const supabase = supabaseAvailable 
+const supabase = supabaseAvailable
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
@@ -22,24 +22,29 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     // Only attempt to check auth if Supabase is properly initialized
     if (!supabaseAvailable) {
-      console.log("Supabase environment variables are not set. Authentication is disabled.");
+      console.log(
+        'Supabase environment variables are not set. Authentication is disabled.'
+      );
       return;
     }
-    
+
     // Check if user is already logged in
     const getUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
       if (user) {
         setUser(user);
       }
     };
-    
+
     getUser();
-    
+
     // Listen for authentication state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -50,37 +55,37 @@ const Navbar = () => {
         }
       }
     );
-    
+
     return () => {
       if (authListener && authListener.subscription) {
         authListener.subscription.unsubscribe();
       }
     };
   }, []);
-  
+
   const handleLogout = async () => {
     if (!supabaseAvailable) {
-      toast({ 
-        variant: "destructive",
-        title: "Authentication is not configured" 
+      toast({
+        variant: 'destructive',
+        title: 'Authentication is not configured',
       });
       return;
     }
-    
+
     try {
       await supabase.auth.signOut();
-      toast({ 
-        title: "Logged out successfully" 
+      toast({
+        title: 'Logged out successfully',
       });
       navigate('/');
     } catch (error) {
-      toast({ 
-        variant: "destructive",
-        title: "Error logging out" 
+      toast({
+        variant: 'destructive',
+        title: 'Error logging out',
       });
     }
   };
-  
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -90,29 +95,50 @@ const Navbar = () => {
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <Link to="/" className="font-display text-2xl font-bold text-terracotta">
-              African Feast
+            <Link
+              to="/"
+              className="font-display text-2xl font-bold text-terracotta"
+            >
+              Vemma's Kitchen
             </Link>
           </div>
 
           {/* Desktop menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="font-medium hover:text-terracotta transition-colors">
+            <Link
+              to="/"
+              className="font-medium hover:text-terracotta transition-colors"
+            >
               Home
             </Link>
-            <a href="#about" className="font-medium hover:text-terracotta transition-colors">
+            <a
+              href="#about"
+              className="font-medium hover:text-terracotta transition-colors"
+            >
               About
             </a>
-            <a href="#services" className="font-medium hover:text-terracotta transition-colors">
+            <a
+              href="#services"
+              className="font-medium hover:text-terracotta transition-colors"
+            >
               Services
             </a>
-            <Link to="/menu" className="font-medium hover:text-terracotta transition-colors">
+            <Link
+              to="/menu"
+              className="font-medium hover:text-terracotta transition-colors"
+            >
               Menu
             </Link>
-            <a href="#testimonials" className="font-medium hover:text-terracotta transition-colors">
+            <a
+              href="#testimonials"
+              className="font-medium hover:text-terracotta transition-colors"
+            >
               Testimonials
             </a>
-            <a href="#contact" className="font-medium hover:text-terracotta transition-colors">
+            <a
+              href="#contact"
+              className="font-medium hover:text-terracotta transition-colors"
+            >
               Contact
             </a>
           </div>
@@ -120,15 +146,15 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <Button 
+                <Button
                   variant="ghost"
                   className="font-medium hover:text-terracotta transition-colors"
                   onClick={handleLogout}
                 >
                   Log Out
                 </Button>
-                <Button 
-                  onClick={() => navigate('/reservation')} 
+                <Button
+                  onClick={() => navigate('/reservation')}
                   className="bg-terracotta hover:bg-terracotta/90 text-white"
                 >
                   Book a Table
@@ -137,7 +163,10 @@ const Navbar = () => {
             ) : (
               <>
                 <Link to="/account">
-                  <Button variant="outline" className="border-terracotta text-terracotta hover:bg-terracotta/10">
+                  <Button
+                    variant="outline"
+                    className="border-terracotta text-terracotta hover:bg-terracotta/10"
+                  >
                     <User className="h-4 w-4 mr-2" />
                     Sign In
                   </Button>
@@ -209,7 +238,7 @@ const Navbar = () => {
               >
                 Contact
               </a>
-              
+
               {user ? (
                 <>
                   <Button
@@ -226,8 +255,8 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link to="/account" onClick={toggleMenu}>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full border-terracotta text-terracotta hover:bg-terracotta/10"
                     >
                       <User className="h-4 w-4 mr-2" />
@@ -236,13 +265,13 @@ const Navbar = () => {
                   </Link>
                 </>
               )}
-              
+
               <Link to="/reservation" onClick={toggleMenu}>
                 <Button className="w-full bg-terracotta hover:bg-terracotta/90 text-white">
                   Book a Table
                 </Button>
               </Link>
-              
+
               <Link to="/catering" onClick={toggleMenu}>
                 <Button variant="ghost" className="w-full justify-start">
                   Request Catering
