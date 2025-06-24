@@ -6,6 +6,7 @@ const Footer = () => {
     <footer className="bg-charcoal text-white">
       <div className="container-custom py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {/* Brand */}
           <div>
             <Link
               to="/"
@@ -22,18 +23,25 @@ const Footer = () => {
                 (platform) => (
                   <a
                     key={platform}
-                    href={`#${platform}`}
-                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-terracotta transition-colors"
+                    href={`https://www.${platform}.com`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={platform}
+                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-terracotta hover:scale-105 transition-all"
                   >
                     <span className="sr-only">{platform}</span>
                     <svg
                       className="h-5 w-5"
-                      aria-hidden="true"
                       fill="currentColor"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
-                      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"></path>
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 
+                    10-10S17.52 2 12 2zm0 18c-4.41 
+                    0-8-3.59-8-8s3.59-8 8-8 8 3.59 
+                    8 8-3.59 8-8 8z"
+                      />
                     </svg>
                   </a>
                 )
@@ -41,98 +49,52 @@ const Footer = () => {
             </div>
           </div>
 
+          {/* Quick Links */}
           <div>
             <h3 className="font-semibold text-lg mb-6">Quick Links</h3>
             <ul className="space-y-4">
-              <li>
-                <a
-                  href="#about"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#services"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Services
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#menu"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Menu
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#testimonials"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Testimonials
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#contact"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Contact
-                </a>
-              </li>
+              {[
+                { label: 'About Us', to: '/about' },
+                { label: 'Services', to: '/services' },
+                { label: 'Menu', to: '/menu' },
+                { label: 'Contact', to: '/contact' },
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link
+                    to={link.to}
+                    className="text-white/70 hover:text-terracotta hover:scale-105 inline-block transition-all"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Services */}
           <div>
             <h3 className="font-semibold text-lg mb-6">Services</h3>
             <ul className="space-y-4">
-              <li>
-                <a
-                  href="#"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Indoor Catering
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Outdoor Catering
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Special Event Catering
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Corporate Catering
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-white/70 hover:text-terracotta transition-colors"
-                >
-                  Private Chef Services
-                </a>
-              </li>
+              {[
+                'Indoor Catering',
+                'Outdoor Catering',
+                'Special Event Catering',
+                'Corporate Catering',
+                'Private Chef Services',
+              ].map((service) => (
+                <li key={service}>
+                  <a
+                    href="#"
+                    className="text-white/70 hover:text-terracotta hover:scale-105 inline-block transition-all"
+                  >
+                    {service}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Contact Info */}
           <div>
             <h3 className="font-semibold text-lg mb-6">Contact Info</h3>
             <address className="text-white/70 not-italic space-y-4">
@@ -161,24 +123,25 @@ const Footer = () => {
           </div>
         </div>
 
+        {/* Bottom */}
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/70 text-sm">
             &copy; {new Date().getFullYear()} Vemma's Kitchen Catering. All
             rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a
-              href="#"
+            <Link
+              to="/privacy-policy"
               className="text-white/70 hover:text-terracotta transition-colors text-sm"
             >
               Privacy Policy
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/terms"
               className="text-white/70 hover:text-terracotta transition-colors text-sm"
             >
               Terms of Service
-            </a>
+            </Link>
           </div>
         </div>
       </div>
