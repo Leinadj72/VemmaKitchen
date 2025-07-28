@@ -1,70 +1,107 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { Menu, X, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
+import { createClient, User as SupabaseUser } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabaseAvailable = supabaseUrl && supabaseAnonKey;
+// Supabase setup
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+const supabaseAvailable = !!supabaseUrl && !!supabaseAnonKey;
+
 const supabase = supabaseAvailable
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!supabaseAvailable) return;
+    if (!supabase) return;
 
     const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) setUser(user);
+      const { data, error } = await supabase.auth.getUser();
+      if (error) return;
+      setUser(data.user);
     };
 
     getUser();
 
+    let logoutTimer: NodeJS.Timeout;
+
+    const resetLogoutTimer = () => {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        toast({
+          variant: "destructive",
+          title: "Logged out",
+          description: "You were inactive for 6 hours",
+        });
+        navigate("/account");
+      }, 6 * 60 * 60 * 1000); // 6 hours
+    };
+
+    ["mousemove", "keydown", "click", "scroll"].forEach((event) =>
+      window.addEventListener(event, resetLogoutTimer)
+    );
+
+    resetLogoutTimer();
+
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) setUser(session.user);
-        if (event === 'SIGNED_OUT') setUser(null);
+        if (event === "SIGNED_IN" && session?.user) {
+          setUser(session.user);
+        }
+        if (event === "SIGNED_OUT") {
+          setUser(null);
+        }
       }
     );
 
     return () => {
-      authListener?.subscription?.unsubscribe();
+      authListener.subscription.unsubscribe();
+      ["mousemove", "keydown", "click", "scroll"].forEach((event) =>
+        window.removeEventListener(event, resetLogoutTimer)
+      );
+      clearTimeout(logoutTimer);
     };
-  }, []);
+  }, [navigate, toast]);
 
   const handleLogout = async () => {
-    if (!supabaseAvailable) {
+    if (!supabase) {
       toast({
-        variant: 'destructive',
-        title: 'Authentication is not configured',
+        variant: "destructive",
+        title: "Authentication is not configured",
       });
       return;
     }
+
     try {
       await supabase.auth.signOut();
-      toast({ title: 'Logged out successfully' });
-      navigate('/');
-    } catch {
-      toast({ variant: 'destructive', title: 'Error logging out' });
+      toast({ title: "Logged out successfully" });
+      navigate("/");
+    } catch (error: unknown) {
+      toast({
+        variant: "destructive",
+        title: "Error logging out",
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
     }
   };
 
   const navLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'About', to: '/about' },
-    { label: 'Services', to: '/services' },
-    { label: 'Menu', to: '/menu' },
-    { label: 'Contact', to: '/contact' },
+    { label: "Home", to: "/" },
+    { label: "About", to: "/about" },
+    { label: "Services", to: "/services" },
+    { label: "Menu", to: "/menu" },
+    { label: "Contact", to: "/contact" },
   ];
 
   return (
@@ -102,7 +139,7 @@ const Navbar = () => {
                 Log Out
               </Button>
               <Button
-                onClick={() => navigate('/reservation')}
+                onClick={() => navigate("/reservation")}
                 className="bg-terracotta hover:bg-terracotta/90 text-white"
               >
                 Book a Table
@@ -129,7 +166,7 @@ const Navbar = () => {
 
         {/* Mobile menu toggle */}
         <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={() => setIsMenuOpen((prev) => !prev)}
           className="md:hidden text-charcoal"
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}

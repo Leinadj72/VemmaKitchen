@@ -120,11 +120,12 @@ const Catering = () => {
       // Reset form
       form.reset();
       navigate('/catering-confirmation');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error.message : "Something went wrong";
       toast({
         variant: "destructive",
         title: "Submission failed",
-        description: error.message || "Something went wrong",
+        description: err,
       });
     } finally {
       setLoading(false);
