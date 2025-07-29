@@ -1,8 +1,8 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 const Contact = () => {
   return (
@@ -94,7 +94,7 @@ const Contact = () => {
                         href="tel:+11234567890"
                         className="hover:text-terracotta transition-colors"
                       >
-                        (123) 456-7890
+                        +234 8026384531
                       </a>
                     </p>
                   </div>
@@ -130,7 +130,7 @@ const Contact = () => {
               <div className="mt-8">
                 <h4 className="font-semibold mb-4">Follow Us</h4>
                 <div className="flex space-x-4">
-                  {['facebook', 'twitter', 'instagram', 'youtube'].map(
+                  {["facebook", "twitter", "instagram", "youtube"].map(
                     (platform) => (
                       <a
                         key={platform}

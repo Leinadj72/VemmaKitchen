@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -19,7 +19,7 @@ const Footer = () => {
               restaurant and comprehensive catering services for all occasions.
             </p>
             <div className="flex space-x-4">
-              {['facebook', 'twitter', 'instagram', 'youtube'].map(
+              {["facebook", "twitter", "instagram", "youtube"].map(
                 (platform) => (
                   <a
                     key={platform}
@@ -54,10 +54,10 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-6">Quick Links</h3>
             <ul className="space-y-4">
               {[
-                { label: 'About Us', to: '/about' },
-                { label: 'Services', to: '/services' },
-                { label: 'Menu', to: '/menu' },
-                { label: 'Contact', to: '/contact' },
+                { label: "About Us", to: "/about" },
+                { label: "Services", to: "/services" },
+                { label: "Menu", to: "/menu" },
+                { label: "Contact", to: "/contact" },
               ].map((link) => (
                 <li key={link.label}>
                   <Link
@@ -76,11 +76,11 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-6">Services</h3>
             <ul className="space-y-4">
               {[
-                'Indoor Catering',
-                'Outdoor Catering',
-                'Special Event Catering',
-                'Corporate Catering',
-                'Private Chef Services',
+                "Indoor Catering",
+                "Outdoor Catering",
+                "Special Event Catering",
+                "Corporate Catering",
+                "Private Chef Services",
               ].map((service) => (
                 <li key={service}>
                   <a
@@ -108,7 +108,7 @@ const Footer = () => {
                   href="tel:+11234567890"
                   className="hover:text-terracotta transition-colors"
                 >
-                  (123) 456-7890
+                  +234 8026384531
                 </a>
               </p>
               <p>

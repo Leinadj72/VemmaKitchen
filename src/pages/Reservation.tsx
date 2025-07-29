@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -11,31 +11,31 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { CalendarDays, Clock } from 'lucide-react';
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarDays, Clock } from "lucide-react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import * as z from 'zod';
-import { createClient } from '@supabase/supabase-js';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/popover";
+import * as z from "zod";
+import { createClient } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
 // Initialize Supabase client with fallback values if env variables aren't available
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 // Check if the environment variables are available
 const supabaseAvailable = supabaseUrl && supabaseAnonKey;
@@ -46,27 +46,27 @@ const supabase = supabaseAvailable
   : null;
 
 const TIMES = [
-  '17:00',
-  '17:30',
-  '18:00',
-  '18:30',
-  '19:00',
-  '19:30',
-  '20:00',
-  '20:30',
-  '21:00',
-  '21:30',
+  "17:00",
+  "17:30",
+  "18:00",
+  "18:30",
+  "19:00",
+  "19:30",
+  "20:00",
+  "20:30",
+  "21:00",
+  "21:30",
 ];
 
-const PARTY_SIZES = ['1', '2', '3', '4', '5', '6', '7', '8'];
+const PARTY_SIZES = ["1", "2", "3", "4", "5", "6", "7", "8"];
 
 const reservationSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
-  email: z.string().email({ message: 'Please enter a valid email' }),
-  phone: z.string().min(10, { message: 'Please enter a valid phone number' }),
-  date: z.date({ required_error: 'Please select a date' }),
-  time: z.string({ required_error: 'Please select a time' }),
-  partySize: z.string({ required_error: 'Please select party size' }),
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email" }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number" }),
+  date: z.date({ required_error: "Please select a date" }),
+  time: z.string({ required_error: "Please select a time" }),
+  partySize: z.string({ required_error: "Please select party size" }),
   specialRequests: z.string().optional(),
 });
 
@@ -79,23 +79,23 @@ const Reservation = () => {
   const form = useForm<z.infer<typeof reservationSchema>>({
     resolver: zodResolver(reservationSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      specialRequests: '',
+      name: "",
+      email: "",
+      phone: "",
+      specialRequests: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof reservationSchema>) => {
     if (!supabaseAvailable) {
       toast({
-        variant: 'destructive',
-        title: 'Database connection not configured',
-        description: 'Supabase environment variables are not set up.',
+        variant: "destructive",
+        title: "Database connection not configured",
+        description: "Supabase environment variables are not set up.",
       });
 
       // For demo purposes, still navigate to confirmation
-      navigate('/reservation-confirmation');
+      navigate("/reservation-confirmation");
       return;
     }
 
@@ -104,17 +104,17 @@ const Reservation = () => {
 
       // Insert reservation into Supabase
       const { data, error } = await supabase
-        .from('reservations')
+        .from("reservations")
         .insert([
           {
             name: values.name,
             email: values.email,
             phone: values.phone,
-            date: format(values.date, 'yyyy-MM-dd'),
+            date: format(values.date, "yyyy-MM-dd"),
             time: values.time,
             party_size: Number(values.partySize),
             special_requests: values.specialRequests || null,
-            status: 'pending',
+            status: "pending",
           },
         ])
         .select();
@@ -122,18 +122,18 @@ const Reservation = () => {
       if (error) throw error;
 
       toast({
-        title: 'Reservation submitted!',
+        title: "Reservation submitted!",
         description: "We'll send a confirmation to your email soon.",
       });
 
       // Reset form and navigate to confirmation
       form.reset();
-      navigate('/reservation-confirmation');
+      navigate("/reservation-confirmation");
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Reservation failed',
-        description: error.message || 'Something went wrong',
+        variant: "destructive",
+        title: "Reservation failed",
+        description: error.message || "Something went wrong",
       });
     } finally {
       setLoading(false);
@@ -212,7 +212,7 @@ const Reservation = () => {
                         <FormItem>
                           <FormLabel>Phone Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="(123) 456-7890" {...field} />
+                            <Input placeholder="+234 8026384531" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -237,8 +237,8 @@ const Reservation = () => {
                             <SelectContent>
                               {PARTY_SIZES.map((size) => (
                                 <SelectItem key={size} value={size}>
-                                  {size}{' '}
-                                  {Number(size) === 1 ? 'person' : 'people'}
+                                  {size}{" "}
+                                  {Number(size) === 1 ? "person" : "people"}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -260,14 +260,14 @@ const Reservation = () => {
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
-                                  variant={'outline'}
+                                  variant={"outline"}
                                   className={`w-full justify-start text-left font-normal ${
-                                    !field.value && 'text-muted-foreground'
+                                    !field.value && "text-muted-foreground"
                                   }`}
                                 >
                                   <CalendarDays className="mr-2 h-4 w-4" />
                                   {field.value ? (
-                                    format(field.value, 'PPP')
+                                    format(field.value, "PPP")
                                   ) : (
                                     <span>Pick a date</span>
                                   )}
@@ -349,7 +349,7 @@ const Reservation = () => {
                     className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
                     disabled={loading}
                   >
-                    {loading ? 'Processing...' : 'Book Reservation'}
+                    {loading ? "Processing..." : "Book Reservation"}
                   </Button>
                 </form>
               </Form>

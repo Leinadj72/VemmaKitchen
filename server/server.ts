@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
 import cors from "cors";
+import cateringRoutes from "./routes/cateringRoutes";
+import { CommandFailedEvent } from "mongodb";
 
 // Load env vars
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -44,6 +46,9 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Routes
+app.use("/api", cateringRoutes);
 
 // Save user route
 app.post("/api/save-user", async (req: Request, res: Response) => {
