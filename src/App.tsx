@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import AboutPage from "@/pages/AboutPage";
 import ServicesPage from "@/pages/ServicesPage";
 import MenuPage from "@/pages/MenuPage";
+import FullMenu from "@/pages/FullMenu";
 import ContactPage from "@/pages/ContactPage";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/menu" element={<MenuPage />} />
+          <Route path="/menu/full" element={<FullMenu />} />
           <Route path="/contact" element={<ContactPage />} />
 
           {/* Feature Routes */}
