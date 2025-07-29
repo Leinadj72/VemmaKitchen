@@ -103,23 +103,19 @@ const Reservation = () => {
       setLoading(true);
 
       // Insert reservation into Supabase
-      const { data, error } = await supabase
-        .from("reservations")
-        .insert([
-          {
-            name: values.name,
-            email: values.email,
-            phone: values.phone,
-            date: format(values.date, "yyyy-MM-dd"),
-            time: values.time,
-            party_size: Number(values.partySize),
-            special_requests: values.specialRequests || null,
-            status: "pending",
-          },
-        ])
-        .select();
+      const res = await fetch("http://localhost:5000/api/reservation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...values,
+          date: format(values.date, "yyyy-MM-dd"),
+          partySize: Number(values.partySize),
+        }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Submission failed");
 
       toast({
         title: "Reservation submitted!",
@@ -129,11 +125,13 @@ const Reservation = () => {
       // Reset form and navigate to confirmation
       form.reset();
       navigate("/reservation-confirmation");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong";
       toast({
         variant: "destructive",
-        title: "Reservation failed",
-        description: error.message || "Something went wrong",
+        title: "Submission failed",
+        description: message,
       });
     } finally {
       setLoading(false);

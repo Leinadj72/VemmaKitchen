@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -19,33 +20,42 @@ const Footer = () => {
               restaurant and comprehensive catering services for all occasions.
             </p>
             <div className="flex space-x-4">
-              {["facebook", "twitter", "instagram", "youtube"].map(
-                (platform) => (
-                  <a
-                    key={platform}
-                    href={`https://www.${platform}.com`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={platform}
-                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-terracotta hover:scale-105 transition-all"
-                  >
-                    <span className="sr-only">{platform}</span>
-                    <svg
-                      className="h-5 w-5"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 
-                    10-10S17.52 2 12 2zm0 18c-4.41 
-                    0-8-3.59-8-8s3.59-8 8-8 8 3.59 
-                    8 8-3.59 8-8 8z"
-                      />
-                    </svg>
-                  </a>
-                )
-              )}
+              <a
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-terracotta hover:text-white hover:scale-105 transition-all"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Twitter"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-terracotta hover:text-white hover:scale-105 transition-all"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-terracotta hover:text-white hover:scale-105 transition-all"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-terracotta hover:text-white hover:scale-105 transition-all"
+              >
+                <Youtube className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
@@ -83,12 +93,12 @@ const Footer = () => {
                 "Private Chef Services",
               ].map((service) => (
                 <li key={service}>
-                  <a
-                    href="#"
+                  <Link
+                    to={`/services?focus=${encodeURIComponent(service)}`}
                     className="text-white/70 hover:text-terracotta hover:scale-105 inline-block transition-all"
                   >
                     {service}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

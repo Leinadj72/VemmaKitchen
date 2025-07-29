@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
 import cors from "cors";
+import contactRoutes from "./routes/contact";
 import cateringRoutes from "./routes/cateringRoutes";
+import reservationRoutes from "./routes/reservation";
 import { CommandFailedEvent } from "mongodb";
 
 // Load env vars
@@ -48,7 +50,9 @@ app.use(
 app.use(express.json());
 
 // Routes
+app.use("/api", contactRoutes);
 app.use("/api", cateringRoutes);
+app.use("/api", reservationRoutes);
 
 // Save user route
 app.post("/api/save-user", async (req: Request, res: Response) => {
