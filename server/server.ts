@@ -7,6 +7,10 @@ import contactRoutes from "./routes/contact";
 import cateringRoutes from "./routes/cateringRoutes";
 import reservationRoutes from "./routes/reservation";
 import { CommandFailedEvent } from "mongodb";
+import menuRoutes from "./routes/menu";
+import adminRoutes from "./routes/admin";
+import { connectToDb } from "./db";
+import { client } from "./db";
 
 // Load env vars
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -53,6 +57,8 @@ app.use(express.json());
 app.use("/api", contactRoutes);
 app.use("/api", cateringRoutes);
 app.use("/api", reservationRoutes);
+app.use("/api/menu", menuRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Save user route
 app.post("/api/save-user", async (req: Request, res: Response) => {

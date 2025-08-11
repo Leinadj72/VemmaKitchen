@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 interface MenuItem {
-  id: number;
+  _id: string;
   name: string;
   description: string;
   price: string;
@@ -10,31 +11,11 @@ interface MenuItem {
   available: boolean;
 }
 
-const initialMenu: MenuItem[] = [
-  {
-    id: 1,
-    name: "Jollof Rice",
-    description:
-      "Fragrant rice cooked in tomato sauce with aromatic herbs and spices",
-    price: "$15.99",
-    category: "Mains",
-    image: "https://images.unsplash.com/photo-1613145999275-6d9d7cf83b9b",
-    available: true,
-  },
-  {
-    id: 2,
-    name: "Fried Plantains",
-    description: "Sweet plantains fried until golden and caramelized",
-    price: "$6.99",
-    category: "Sides",
-    image: "https://images.unsplash.com/photo-1623690562603-5a5b7c8c508b",
-    available: false,
-  },
-];
+const API = "http://localhost:5000/api/menu";
 
 const AdminMenu = () => {
-  const [menu, setMenu] = useState<MenuItem[]>(initialMenu);
-  const [form, setForm] = useState<Omit<MenuItem, "id">>({
+  const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [form, setForm] = useState<Omit<MenuItem, "_id">>({
     name: "",
     description: "",
     price: "",
@@ -42,50 +23,77 @@ const AdminMenu = () => {
     image: "",
     available: true,
   });
-
+  const [file, setFile] = useState<File | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchMenu();
+  }, []);
+
+  const fetchMenu = async () => {
+    const res = await axios.get<MenuItem[]>(API); // 👈 Add generic here
+    setMenu(res.data);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddOrUpdate = () => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleAddOrUpdate = async () => {
     if (!form.name || !form.price || !form.category)
       return alert("Fill all fields");
 
-    if (isEditing && editId !== null) {
-      setMenu((prev) =>
-        prev.map((item) => (item.id === editId ? { ...item, ...form } : item))
-      );
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("price", form.price);
+    formData.append("category", form.category);
+    formData.append("available", String(form.available));
+    if (file) formData.append("file", file);
+
+    try {
+      if (isEditing && editId) {
+        await axios.put(`${API}/${editId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        await axios.post(API, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        category: "Mains",
+        image: "",
+        available: true,
+      });
+      setFile(null);
       setIsEditing(false);
       setEditId(null);
-    } else {
-      const newItem: MenuItem = {
-        id: Date.now(),
-        ...form,
-      };
-      setMenu((prev) => [...prev, newItem]);
+      fetchMenu();
+    } catch (err) {
+      console.error(err);
     }
-
-    setForm({
-      name: "",
-      description: "",
-      price: "",
-      category: "Mains",
-      image: "",
-      available: true,
-    });
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      setMenu((prev) => prev.filter((item) => item.id !== id));
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Delete this item?")) {
+      await axios.delete(`${API}/${id}`);
+      fetchMenu();
     }
   };
 
@@ -99,23 +107,20 @@ const AdminMenu = () => {
       available: item.available,
     });
     setIsEditing(true);
-    setEditId(item.id);
+    setEditId(item._id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const toggleAvailability = (id: number) => {
-    setMenu((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, available: !item.available } : item
-      )
-    );
+  const toggleAvailability = async (id: string) => {
+    await axios.patch(`${API}/${id}/toggle`);
+    fetchMenu();
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Admin Menu Manager</h1>
 
-      {/* Add/Edit Form */}
+      {/* Form */}
       <div className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow mb-10">
         <h2 className="text-lg font-semibold mb-4">
           {isEditing ? "Edit Menu Item" : "Add New Menu Item"}
@@ -145,13 +150,24 @@ const AdminMenu = () => {
             <option>Sides</option>
             <option>Desserts</option>
           </select>
-          <input
-            name="image"
-            value={form.image}
-            onChange={handleChange}
-            placeholder="Image URL"
-            className="border p-2 rounded"
-          />
+          <div className="flex flex-col">
+            <label
+              htmlFor="file"
+              className="mb-1 text-sm font-medium text-gray-700 dark:text-white"
+            >
+              Upload Image or Video
+            </label>
+            <input
+              id="file"
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleFileChange}
+              className="border p-2 rounded"
+              title="Upload image or video"
+              aria-label="Upload image or video"
+            />
+          </div>
+
           <textarea
             name="description"
             value={form.description}
@@ -159,28 +175,6 @@ const AdminMenu = () => {
             placeholder="Description"
             className="border p-2 rounded col-span-1 sm:col-span-2"
           />
-          <div className="mt-1 flex items-center gap-2 col-span-1 sm:col-span-2">
-            <div className="flex flex-col">
-              <label
-                htmlFor="name"
-                className="mb-1 text-sm font-medium text-gray-700 dark:text-white"
-              >
-                Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Enter dish name"
-                className="border p-2 rounded"
-              />
-            </div>
-
-            <label className="text-sm text-gray-700 dark:text-white">
-              Available
-            </label>
-          </div>
         </div>
         <div className="mt-4 flex gap-4">
           <button
@@ -202,6 +196,7 @@ const AdminMenu = () => {
                   image: "",
                   available: true,
                 });
+                setFile(null);
               }}
               className="px-6 py-2 border border-gray-400 rounded hover:bg-gray-100"
             >
@@ -211,20 +206,22 @@ const AdminMenu = () => {
         </div>
       </div>
 
-      {/* Menu List */}
+      {/* List */}
       <div>
         <h2 className="text-lg font-semibold mb-4">Current Menu Items</h2>
         <div className="grid md:grid-cols-2 gap-6">
           {menu.map((item) => (
             <div
-              key={item.id}
+              key={item._id}
               className="border p-4 rounded-lg bg-white dark:bg-zinc-800 shadow"
             >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-full h-40 object-cover rounded mb-2"
-              />
+              {item.image && (
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-40 object-cover rounded mb-2"
+                />
+              )}
               <h3 className="text-xl font-bold">{item.name}</h3>
               <p className="text-sm text-gray-600 dark:text-white/60 mb-1">
                 {item.description}
@@ -246,13 +243,13 @@ const AdminMenu = () => {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(item.id)}
+                  onClick={() => handleDelete(item._id)}
                   className="text-red-500 hover:underline text-sm"
                 >
                   Delete
                 </button>
                 <button
-                  onClick={() => toggleAvailability(item.id)}
+                  onClick={() => toggleAvailability(item._id)}
                   className="text-yellow-500 hover:underline text-sm"
                 >
                   {item.available ? "Mark Unavailable" : "Mark Available"}
