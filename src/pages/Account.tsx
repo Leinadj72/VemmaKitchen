@@ -134,6 +134,7 @@ const Account = () => {
         body: JSON.stringify({
           fullName: values.fullName,
           email: values.email,
+          is_admin: true,
         }),
       });
 

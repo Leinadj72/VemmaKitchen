@@ -1,43 +1,45 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import path from 'path';
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+import path from "path";
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const mongoURI = process.env.MONGO_URI;
-if (!mongoURI) throw new Error('MONGO_URI not defined in .env file');
+if (!mongoURI) throw new Error("MONGO_URI not defined in .env file");
 
-mongoose.connect(mongoURI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB error:', err));
+mongoose
+  .connect(mongoURI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB error:", err));
 
 // Mongoose Schema
 const userSchema = new mongoose.Schema({
   fullName: String,
   email: String,
+  is_admin: { type: Boolean, default: false },
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 // POST route to save user
-app.post('/api/save-user', async (req, res) => {
-  const { fullName, email } = req.body;
+app.post("/api/save-user", async (req, res) => {
+  const { fullName, email, is_admin } = req.body;
   if (!fullName || !email) {
-    return res.status(400).json({ error: 'Missing fullName or email' });
+    return res.status(400).json({ error: "Missing fullName or email" });
   }
 
   try {
-    const newUser = new User({ fullName, email });
+    const newUser = new User({ fullName, email, is_admin });
     await newUser.save();
-    res.status(201).json({ message: 'User saved' });
+    res.status(201).json({ message: "User saved" });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to save user' });
+    res.status(500).json({ error: "Failed to save user" });
   }
 });
 
