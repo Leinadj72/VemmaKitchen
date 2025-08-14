@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Supabase setup
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
@@ -27,6 +28,7 @@ const supabase = supabaseAvailable
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+// Schemas
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z
@@ -44,6 +46,7 @@ const signupSchema = z
       .string()
       .min(6, { message: "Password must be at least 6 characters" }),
     confirmPassword: z.string(),
+    adminInviteCode: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -53,6 +56,7 @@ const signupSchema = z
 const Account = () => {
   const [loading, setLoading] = useState(false);
   const [supabaseError] = useState(!supabaseAvailable);
+  const [showInviteCode, setShowInviteCode] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -68,6 +72,7 @@ const Account = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      adminInviteCode: "",
     },
   });
 
@@ -93,11 +98,10 @@ const Account = () => {
       toast({ title: "Login successful", description: "Welcome back!" });
       navigate("/");
     } catch (error: unknown) {
-      const err = error as Error;
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: err.message || "Something went wrong",
+        description: (error as Error).message || "Something went wrong",
       });
     } finally {
       setLoading(false);
@@ -117,7 +121,8 @@ const Account = () => {
     try {
       setLoading(true);
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Create account in Supabase
+      const { error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
@@ -127,19 +132,18 @@ const Account = () => {
 
       if (authError) throw authError;
 
-      // Save user in MongoDB via backend
+      // Save in MongoDB
       const saveRes = await fetch("http://localhost:5000/api/save-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: values.fullName,
           email: values.email,
-          is_admin: true,
+          adminInviteCode: values.adminInviteCode || "",
         }),
       });
 
       const saveJson = await saveRes.json();
-
       if (!saveRes.ok) {
         console.error("❌ Error saving user to MongoDB:", saveJson.message);
         toast({
@@ -155,11 +159,10 @@ const Account = () => {
         signupForm.reset();
       }
     } catch (error: unknown) {
-      const err = error as Error;
       toast({
         variant: "destructive",
         title: "Sign up failed",
-        description: err.message || "Something went wrong",
+        description: (error as Error).message || "Something went wrong",
       });
     } finally {
       setLoading(false);
@@ -192,6 +195,7 @@ const Account = () => {
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
 
+              {/* LOGIN FORM */}
               <TabsContent value="login">
                 <Form {...loginForm}>
                   <form
@@ -239,6 +243,7 @@ const Account = () => {
                 </Form>
               </TabsContent>
 
+              {/* SIGNUP FORM */}
               <TabsContent value="signup">
                 <Form {...signupForm}>
                   <form
@@ -305,6 +310,51 @@ const Account = () => {
                         </FormItem>
                       )}
                     />
+
+                    {/* Invite Code Section */}
+                    <div>
+                      {!showInviteCode && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full text-sm"
+                          onClick={() => setShowInviteCode(true)}
+                        >
+                          Have an admin invite code?
+                        </Button>
+                      )}
+
+                      <AnimatePresence>
+                        {showInviteCode && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: "auto" }}
+                            exit={{ opacity: 0, y: -8, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <FormField
+                              control={signupForm.control}
+                              name="adminInviteCode"
+                              render={({ field }) => (
+                                <FormItem className="mt-3">
+                                  <FormLabel>
+                                    Admin Invite Code (optional)
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter if provided"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
                     <Button
                       type="submit"
                       className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
